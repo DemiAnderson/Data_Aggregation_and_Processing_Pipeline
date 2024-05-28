@@ -3,8 +3,6 @@ import shutil
 import warnings
 
 import functools
-from functools import wraps
-import logging
 import pandas as pd
 from pathlib import Path
 import sqlalchemy
@@ -13,21 +11,12 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from sshtunnel import SSHTunnelForwarder, BaseSSHTunnelForwarderError
 
-from logging_config import logger
-from db_config import DB_PARAMS, SSH_TUNNEL_PARAMS
+from logging_config import * # logger
+from db_config import * # DB_PARAMS, SSH_TUNNEL_PARAMS
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # Decorators
-# Function to logging (decorator)
-def log_function_execution(func):
-    def wrapper(*args, **kwargs):
-        logging.info(f"'{func.__name__}' - Start function")
-        result = func(*args, **kwargs)
-        logging.info(f"'{func.__name__}' - Function executed")
-        return result
-    return wrapper
-
 # Function to fix exceptions (decorator)
 def exception(func):
     @functools.wraps(func)
@@ -52,6 +41,7 @@ def exception(func):
             logger.error(f"SQLAlchemy error in {func.__name__}: {e}")
         except Exception as e:
             logger.error(f"Unexpected error in {func.__name__}: {e}")
+        logger.error(f"'{func.__name__}' - Function failed")            
         return None
     return wrapper
 

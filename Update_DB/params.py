@@ -28,7 +28,6 @@ DATA = {
     }
 }
 
-
 # Folder for Dict
 DICT_PATH = 'C:\\Users\\dmandree\\OneDrive - Guess Inc\\D Project\\Dict\\Mapping.xlsx'
 

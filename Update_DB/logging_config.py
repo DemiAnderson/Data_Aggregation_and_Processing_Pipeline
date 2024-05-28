@@ -1,5 +1,14 @@
 import logging
-from logging import Formatter
+
+
+# Function to logging (decorator)
+def log_function_execution(func):
+    def wrapper(*args, **kwargs):
+        logger.info(f"==> '{func.__name__}' - Start function")
+        result = func(*args, **kwargs)
+        logger.info(f"==> '{func.__name__}' - Function executed")
+        return result
+    return wrapper
 
 def logger_config():
     logging.basicConfig(level=logging.INFO)

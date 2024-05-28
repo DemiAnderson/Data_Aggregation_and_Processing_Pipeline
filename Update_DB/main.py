@@ -3,15 +3,6 @@ from params import * # DATA, DICT_PATH, LIST_OF_SHEETS
 from logging_config import * # logger
 
 
-# Function to logging (decorator)
-def log_function_execution(func):
-    def wrapper(*args, **kwargs):
-        logger.info(f"'{func.__name__}' - Start function")
-        result = func(*args, **kwargs)
-        logger.info(f"'{func.__name__}' - Function executed")
-        return result
-    return wrapper
-
 # Main function
 @log_function_execution
 def main():
