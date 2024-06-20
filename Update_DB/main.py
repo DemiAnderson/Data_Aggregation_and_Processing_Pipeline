@@ -42,11 +42,11 @@ def main():
                 # Load data to database
                 load_data_to_db(df, engine, table_name, table_info["IF_EXISTS"])   
                 
-                # Create Dict 
-                dfs = load_excel_sheets(DICT_PATH, LIST_OF_SHEETS)
-                
-                #transform and load dict data to database
-                transform_and_load_dict(engine, dfs)
+            # Create Dict 
+            dfs = load_excel_sheets(DICT_PATH, LIST_OF_SHEETS)
+            
+            #transform and load dict data to database
+            transform_and_load_dict(engine, dfs)
 
 if __name__ == '__main__':
     main()
