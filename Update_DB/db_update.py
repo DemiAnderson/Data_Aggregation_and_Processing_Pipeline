@@ -269,6 +269,11 @@ def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, name: st
     """
     
     with engine.connect() as conn:
+        if IF_EXISTS == 'replace':
+            IF_EXISTS = 'append'
+            # Clearing the table before loading new data
+            conn.execute(text(f"TRUNCATE TABLE {name}"))
+            
         df.to_sql(name, conn, if_exists=IF_EXISTS, index=False)
 
 # Function to transform and load dict data to database  
@@ -282,6 +287,12 @@ def transform_and_load_dict(engine: sqlalchemy.engine.Engine, dfs: dict[str, pd.
         dfs (dict[str, pd.DataFrame]): A dictionary containing DataFrames with sheet names as keys.
     """
     
-    for df_name, df in dfs.items():
-        df.columns = df.columns.str.lower()
-        df.to_sql(df_name.lower(), engine, if_exists="replace", index=False)
+    with engine.connect() as conn:
+        for df_name, df in dfs.items():
+            table_name = df_name.lower()
+            df.columns = df.columns.str.lower()
+            
+            # Clearing the table before loading new data
+            conn.execute(text(f"TRUNCATE TABLE {table_name}"))
+            
+            df.to_sql(table_name, conn, if_exists='append', index=False)
