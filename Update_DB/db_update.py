@@ -255,6 +255,31 @@ def delete_intersections(session: sessionmaker, intersection_df: list[str], tabl
     session.execute(delete_query, {'keys': intersection_df})
     session.commit()
 
+# Function to delete_existing_data if need to replace data in a table 
+def delete_existing_data(engine: sqlalchemy.engine.Engine, session: sqlalchemy.orm.Session, table_name: str) -> None:
+    """Delete existing data from a database table.
+
+    Args:
+        engine (sqlalchemy.engine.Engine): The SQLAlchemy engine object
+            representing the connection to the database.
+        session (sqlalchemy.orm.Session): The SQLAlchemy session object
+            used to interact with the database.
+        table_name (str): The name of the table from which to delete data.
+
+    Raises:
+        KeyError: If the specified table is not found in the database schema.
+    """
+    meta = MetaData()
+    meta.reflect(bind=engine)
+    
+    if table_name in meta.tables:
+        table = meta.tables.get(table_name)
+        
+        # Clearing the table before loading new data
+        delete_stmt = table.delete()
+        session.execute(delete_stmt)
+        session.commit()
+
 # Function to load data to database
 @exception
 @log_function_execution
@@ -274,15 +299,7 @@ def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session:
     with engine.connect() as conn:
         if IF_EXISTS == 'replace':
             IF_EXISTS = 'append'
-            # Get the existing table object from metadata
-            table = meta.tables.get(name)
-            
-            # Clearing the table before loading new data
-            delete_stmt = table.delete()
-            session.execute(delete_stmt)
-            
-            # Commit the delete operation
-            session.commit()
+            delete_existing_data(engine, session, name)
             
         df.to_sql(name, conn, if_exists=IF_EXISTS, index=False)
 
@@ -305,16 +322,7 @@ def transform_and_load_dict(engine: sqlalchemy.engine.Engine, session: sqlalchem
             table_name = df_name.lower()
             df.columns = df.columns.str.lower()
             
-            # Get the existing table object from metadata
-            if table_name in meta.tables:
-                table = meta.tables.get(table_name)
-                
-                # Clearing the table before loading new data
-                delete_stmt = table.delete()
-                session.execute(delete_stmt)
-                
-                # Commit the delete operation
-                session.commit()
+            delete_existing_data(engine, session, table_name)
             
             # Load DataFrame into the database
             # with session.begin():
