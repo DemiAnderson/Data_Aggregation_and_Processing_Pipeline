@@ -258,7 +258,7 @@ def delete_intersections(session: sessionmaker, intersection_df: list[str], tabl
 # Function to load data to database
 @exception
 @log_function_execution
-def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, name: str, IF_EXISTS: str) -> None:
+def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session: sqlalchemy.orm.Session, name: str, IF_EXISTS: str) -> None:
     """Loads a DataFrame into a database table.
 
     Args:
@@ -268,11 +268,21 @@ def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, name: st
         IF_EXISTS (str): How to handle existing data in the table ('replace', 'append', or 'fail').
     """
     
+    meta = MetaData()
+    meta.reflect(bind=engine)
+    
     with engine.connect() as conn:
         if IF_EXISTS == 'replace':
             IF_EXISTS = 'append'
+            # Get the existing table object from metadata
+            table = meta.tables.get(name)
+            
             # Clearing the table before loading new data
-            conn.execute(text(f"TRUNCATE TABLE {name}"))
+            delete_stmt = table.delete()
+            session.execute(delete_stmt)
+            
+            # Commit the delete operation
+            session.commit()
             
         df.to_sql(name, conn, if_exists=IF_EXISTS, index=False)
 
