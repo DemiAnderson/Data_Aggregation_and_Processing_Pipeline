@@ -46,7 +46,7 @@ def main():
             dfs = load_excel_sheets(DICT_PATH, LIST_OF_SHEETS)
             
             #transform and load dict data to database
-            transform_and_load_dict(engine, dfs)
+            transform_and_load_dict(engine, session, dfs)
 
 if __name__ == '__main__':
     main()

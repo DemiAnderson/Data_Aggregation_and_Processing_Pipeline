@@ -6,7 +6,7 @@ import functools
 import pandas as pd
 from pathlib import Path
 import sqlalchemy
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, MetaData, Table
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from sshtunnel import SSHTunnelForwarder, BaseSSHTunnelForwarderError
@@ -279,7 +279,7 @@ def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, name: st
 # Function to transform and load dict data to database  
 @exception 
 @log_function_execution
-def transform_and_load_dict(engine: sqlalchemy.engine.Engine, dfs: dict[str, pd.DataFrame]) -> None:
+def transform_and_load_dict(engine: sqlalchemy.engine.Engine, session: sqlalchemy.orm.Session, dfs: dict[str, pd.DataFrame]) -> None:
     """Transforms and loads data from a dictionary of DataFrames into a database.
 
     Args:
@@ -287,12 +287,26 @@ def transform_and_load_dict(engine: sqlalchemy.engine.Engine, dfs: dict[str, pd.
         dfs (dict[str, pd.DataFrame]): A dictionary containing DataFrames with sheet names as keys.
     """
     
+    meta = MetaData()
+    meta.reflect(bind=engine)
+    
     with engine.connect() as conn:
         for df_name, df in dfs.items():
             table_name = df_name.lower()
             df.columns = df.columns.str.lower()
             
-            # Clearing the table before loading new data
-            conn.execute(text(f"TRUNCATE TABLE {table_name}"))
+            # Get the existing table object from metadata
+            if table_name in meta.tables:
+                table = meta.tables.get(table_name)
+                
+                # Clearing the table before loading new data
+                delete_stmt = table.delete()
+                session.execute(delete_stmt)
+                
+                # Commit the delete operation
+                session.commit()
             
+            # Load DataFrame into the database
+            # with session.begin():
             df.to_sql(table_name, conn, if_exists='append', index=False)
+
