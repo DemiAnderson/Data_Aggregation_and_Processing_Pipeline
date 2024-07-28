@@ -32,4 +32,15 @@ DATA = {
 DICT_PATH = 'C:\\Users\\dmandree\\OneDrive - Guess Inc\\D Project\\Dict\\Mapping.xlsx'
 
 # List of pages that we transform into dataframes
-LIST_OF_SHEETS = ["Stores", "Dist_managers", "VM", "Fin_Calendar_old", "Fin_Calendar_new", "Template", "Start_date", "Comp_flags", "Comp_flags_alter"]
+LIST_OF_SHEETS = [
+    "Stores", 
+    "Dist_managers", 
+    "VM", 
+    "Fin_Calendar_old", 
+    "Fin_Calendar_new", 
+    "Template", 
+    "Start_date", 
+    "Comp_flags", 
+    "Comp_flags_alter", 
+    "Targets"
+    ]

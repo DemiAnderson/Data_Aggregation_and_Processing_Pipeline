@@ -47,6 +47,8 @@ def main():
             
             #transform and load dict data to database
             transform_and_load_dict(engine, session, dfs)
+            
+            session.commit()
 
 if __name__ == '__main__':
     main()

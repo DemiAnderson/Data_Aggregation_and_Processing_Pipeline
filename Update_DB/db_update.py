@@ -256,6 +256,8 @@ def delete_intersections(session: sessionmaker, intersection_df: list[str], tabl
     session.commit()
 
 # Function to delete_existing_data if need to replace data in a table 
+@exception
+@log_function_execution
 def delete_existing_data(engine: sqlalchemy.engine.Engine, session: sqlalchemy.orm.Session, table_name: str) -> None:
     """Delete existing data from a database table.
 
@@ -293,9 +295,6 @@ def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session:
         IF_EXISTS (str): How to handle existing data in the table ('replace', 'append', or 'fail').
     """
     
-    meta = MetaData()
-    meta.reflect(bind=engine)
-    
     with engine.connect() as conn:
         if IF_EXISTS == 'replace':
             IF_EXISTS = 'append'
@@ -313,9 +312,6 @@ def transform_and_load_dict(engine: sqlalchemy.engine.Engine, session: sqlalchem
         engine (sqlalchemy.engine.Engine): The database engine object.
         dfs (dict[str, pd.DataFrame]): A dictionary containing DataFrames with sheet names as keys.
     """
-    
-    meta = MetaData()
-    meta.reflect(bind=engine)
     
     with engine.connect() as conn:
         for df_name, df in dfs.items():
