@@ -285,7 +285,7 @@ def delete_existing_data(engine: sqlalchemy.engine.Engine, session: sqlalchemy.o
 # Function to load data to database
 @exception
 @log_function_execution
-def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session: sqlalchemy.orm.Session, name: str, IF_EXISTS: str) -> None:
+def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session: sqlalchemy.orm.Session, name: str, IF_EXISTS: str, FOLDER_PATH_IN: str) -> None:
     """Loads a DataFrame into a database table.
 
     Args:
@@ -298,7 +298,8 @@ def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session:
     with engine.connect() as conn:
         if IF_EXISTS == 'replace':
             IF_EXISTS = 'append'
-            delete_existing_data(engine, session, name)
+            if os.listdir(FOLDER_PATH_IN):
+                delete_existing_data(engine, session, name)
             
         df.to_sql(name, conn, if_exists=IF_EXISTS, index=False)
 

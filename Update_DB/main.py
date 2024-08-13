@@ -40,7 +40,7 @@ def main():
                 delete_intersections(session, intersection_df, table_name)
                 
                 # Load data to database
-                load_data_to_db(df, engine, session, table_name, table_info["IF_EXISTS"])   
+                load_data_to_db(df, engine, session, table_name, table_info["IF_EXISTS"], table_info["FOLDER_PATH_IN"])   
                 
             # Create Dict 
             dfs = load_excel_sheets(DICT_PATH, LIST_OF_SHEETS)
