@@ -75,6 +75,7 @@ def read_excel_files(FOLDER_PATH_IN: Path, FOLDER_PATH_OUT: Path, SHEET: str, SK
     dfs = []
     for file in file_list:
         file_path = os.path.join(FOLDER_PATH_IN, file)
+        logger.info(f"Processing file: {file}")
         with pd.ExcelFile(file_path) as xls:
             data = pd.read_excel(xls, sheet_name=SHEET, skiprows=SKIP, names=COL_NAMES)
             dfs.append(data)
@@ -130,6 +131,7 @@ def load_excel_sheets(DICT_PATH: Path, LIST_OF_SHEETS: list[str]) -> dict[str, p
 
     sheets_data = {}
     for sheet in LIST_OF_SHEETS:
+        logger.info(f"Loading sheet: {sheet}")
         sheets_data[sheet] = pd.read_excel(DICT_PATH, sheet_name=sheet)
     return sheets_data
 
@@ -316,6 +318,7 @@ def transform_and_load_dict(engine: sqlalchemy.engine.Engine, session: sqlalchem
     
     with engine.connect() as conn:
         for df_name, df in dfs.items():
+            logger.info(f"Processing df: {df_name}")
             table_name = df_name.lower()
             df.columns = df.columns.str.lower()
             
