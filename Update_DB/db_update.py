@@ -300,7 +300,7 @@ def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session:
     with engine.connect() as conn:
         if IF_EXISTS == 'replace':
             IF_EXISTS = 'append'
-            if os.listdir(FOLDER_PATH_IN):
+            if df is not None or not df.empty:
                 delete_existing_data(engine, session, name)
             
         df.to_sql(name, conn, if_exists=IF_EXISTS, index=False)
