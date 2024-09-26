@@ -28,7 +28,9 @@ DATA = {
     }
 }
 
-# Folder for Dict
+RAW_DATA_PATH = '\\\\rumo1w6vfs001.guess.eu\\Data\\Finance\\Andreev\\MS Data'
+
+# File for Dict path
 DICT_PATH = 'C:\\Users\\dmandree\\OneDrive - Guess Inc\\D Project\\Dict\\Mapping.xlsx'
 
 # List of pages that we transform into dataframes
@@ -44,3 +46,5 @@ LIST_OF_SHEETS = [
     "Comp_flags_alter", 
     "Targets"
     ]
+
+

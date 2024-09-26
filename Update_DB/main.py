@@ -1,11 +1,19 @@
 from db_update import * # load_data_to_db, delete_intersections, get_intersections, process_data, read_excel_files, load_excel_sheets, transform_and_load_dict, create_db_engine, create_ssh_tunnel
 from params import * # DATA, DICT_PATH, LIST_OF_SHEETS
 from logging_config import * # logger
+# from sqlalchemy import text  # Импорт для выполнения SQL-запроса            
 
 
 # Main function
 @log_function_execution
 def main():
+    
+    target_keys = {
+    'FNC': DATA['ms_stock']["FOLDER_PATH_IN"],
+    'RTL': DATA['ms_sales']["FOLDER_PATH_IN"],
+    }
+    
+    distribute_files_to_target_dirs(RAW_DATA_PATH, target_keys)
         
     # Create SSH tunnel
     with create_ssh_tunnel() as ssh_tunnel:
@@ -47,6 +55,10 @@ def main():
             
             #transform and load dict data to database
             transform_and_load_dict(engine, session, dfs)
+            
+            # Обновление материализованного представления (заготовка)
+            # logging.info("Refreshing materialized view: my_mat_view")
+            # session.execute(text("REFRESH MATERIALIZED VIEW my_mat_view"))
             
             session.commit()
 

@@ -45,6 +45,62 @@ def exception(func):
         return None
     return wrapper
 
+
+# Function to distribute files from a source directory to target directories based on file name prefixes
+@exception
+@log_function_execution
+def distribute_files_to_target_dirs(RAW_DATA_PATH: Path, target_keys: dict[str, Path]) -> None:    
+    """Distributes files from a source directory to target directories based on file name prefixes.
+
+    Args:
+        RAW_DATA_PATH (Path): The path to the source directory containing the files.
+        target_keys (dict[str, Path]): A dictionary where keys are file name prefixes and values are paths to target directories.
+
+    Returns:
+        None
+    """
+    
+    for filename in os.listdir(RAW_DATA_PATH):
+        source_path = os.path.join(RAW_DATA_PATH, filename)
+         
+        if os.path.isfile(source_path):
+            for prefix, target_dir in target_keys.items():
+                if filename.startswith(prefix):
+                    destination_path = os.path.join(target_dir, filename)
+                    shutil.move(source_path, destination_path)
+                    logging.info(f"Moved file {filename}")
+                    break 
+
+# Function to distributing (move) incoming raw data into folders
+@exception
+@log_function_execution
+def distribute_raw_data_to_folders(RAW_DATA_PATH: Path, fnc_target_dir, rtl_target_dir):
+    """
+    This function scans the source directory for files starting with 'FNC' or 'RTL'.
+    Files starting with 'FNC' are moved to the fnc_target_dir.
+    Files starting with 'RTL' are moved to the rtl_target_dir.
+    
+    :param source_dir: str - Source directory where files are located
+    :param fnc_target_dir: str - Destination directory for 'FNC' files
+    :param rtl_target_dir: str - Destination directory for 'RTL' files
+    """
+
+    for filename in os.listdir(RAW_DATA_PATH):
+        source_path = os.path.join(RAW_DATA_PATH, filename)
+
+        # If it is a file and starts with 'FNC', move to fnc_target_dir
+        if os.path.isfile(source_path) and filename.startswith('FNC'):
+            destination_path = os.path.join(fnc_target_dir, filename)
+            shutil.move(source_path, destination_path)
+            logging.info(f"Moved file {filename}")
+
+        # If it is a file and starts with 'RTL', move to rtl_target_dir
+        elif os.path.isfile(source_path) and filename.startswith('RTL'):
+            destination_path = os.path.join(rtl_target_dir, filename)
+            shutil.move(source_path, destination_path)
+            logging.info(f"Moved file {filename}")
+
+
 # Function to read Excel files
 @exception
 @log_function_execution
