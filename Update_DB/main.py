@@ -56,9 +56,9 @@ def main():
             #transform and load dict data to database
             transform_and_load_dict(engine, session, dfs)
             
-            # Обновление материализованного представления (заготовка)
-            # logging.info("Refreshing materialized view: my_mat_view")
-            # session.execute(text("REFRESH MATERIALIZED VIEW my_mat_view"))
+            # Refreshing the materialized view
+            logging.info("Refreshing materialized view: public.ms_basic")
+            session.execute(text("REFRESH MATERIALIZED VIEW public.ms_basic"))
             
             session.commit()
 
