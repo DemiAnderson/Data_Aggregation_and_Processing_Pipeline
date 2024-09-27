@@ -57,8 +57,9 @@ def main():
             transform_and_load_dict(engine, session, dfs)
             
             # Refreshing the materialized view
-            logging.info("Refreshing materialized view: public.ms_basic")
-            session.execute(text("REFRESH MATERIALIZED VIEW public.ms_basic"))
+            for view in MAT_VIEWS:
+                logging.info(f"Refreshing materialized view: {view}")
+                session.execute(text(f"REFRESH MATERIALIZED VIEW {view}"))
             
             session.commit()
 

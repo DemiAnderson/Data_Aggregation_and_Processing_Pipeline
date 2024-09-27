@@ -47,4 +47,4 @@ LIST_OF_SHEETS = [
     "Targets"
     ]
 
-
+MAT_VIEWS = ["public.ms_basic", "public.ms_basic_mini"]
