@@ -1,8 +1,7 @@
 import logging
+import time
 from requests import get
-
-from db_config import * # DB_PARAMS, SSH_TUNNEL_PARAMS
-
+from db_config import *  # DB_PARAMS, SSH_TUNNEL_PARAMS
 
 class TelegramHandler(logging.Handler):
     def __init__(self):
@@ -20,9 +19,15 @@ class TelegramHandler(logging.Handler):
 # Function to logging (decorator)
 def log_function_execution(func):
     def wrapper(*args, **kwargs):
-        logger.info(f"==>      '{func.__name__}' - Start function")
+        start_time = time.time()
+        logger.info(f"==> '{func.__name__}' - Start function")
+        
         result = func(*args, **kwargs)
-        logger.info(f"==>      '{func.__name__}' - Function executed")
+        
+        end_time = time.time()
+        execution_time = end_time - start_time
+        logger.info(f"==> '{func.__name__}' - Function executed. Execution time: {execution_time:.2f} sec.")
+        
         return result
     return wrapper
 
@@ -31,20 +36,19 @@ def logger_config():
     logging.basicConfig(level=logging.INFO)
     formatter = logging.Formatter('[%(asctime)s] [%(levelname)-7s] %(module)-20s %(message)s')
     
-    
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-
+    
     # Adding the default handlers
     for handler in logging.root.handlers:
         handler.setFormatter(formatter)
-        
+    
     # Adding the Telegram handler
     telegram_handler = TelegramHandler()
     telegram_handler.setLevel(logging.INFO)
     telegram_handler.setFormatter(formatter)
     logger.addHandler(telegram_handler)
-
+    
     return logger
 
 logger = logger_config()
