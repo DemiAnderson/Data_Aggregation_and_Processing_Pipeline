@@ -17,7 +17,9 @@ class ExecutionTimeFilter:
         self.start_time = time.time()
 
     def __call__(self, record):
-        record["extra"]["execution_time"] = f"{time.time() - self.start_time:.2f}s"
+        # Если поле 'execution_time' отсутствует, добавляем его
+        if 'execution_time' not in record["extra"]:
+            record["extra"]["execution_time"] = f"{time.time() - self.start_time:.2f}s"
         return True
 
 # Function to configure logger
@@ -59,13 +61,19 @@ def log_function_execution(func):
     def wrapper(*args, **kwargs):
         start_time = time.time()
         function_name = f"{func.__name__: <28}"
-        logger.info(f"{function_name} - Start function")
+        logger.info(f"{function_name} | {'Start function': <17} | {' ' * 8}")
         
         result = func(*args, **kwargs)
         
         end_time = time.time()
         execution_time = end_time - start_time
-        logger.info(f"{function_name} - Function executed.", extra={"execution_time": f"{execution_time:.2f}s"})
+        
+        # Обновляем значение execution_time
+        execution_time_str = f"{execution_time:.2f}s".ljust(8)
+        logger.info(
+            f"{function_name} | {'Function executed': <17} | {execution_time_str: ^8}", 
+            extra={"execution_time": f"{execution_time:.2f}s"}
+        )
         
         return result
     return wrapper
