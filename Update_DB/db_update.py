@@ -51,7 +51,7 @@ def exception(func):
 # Function to distribute files from a source directory to target directories based on file name prefixes
 @exception
 @log_function_execution
-def distribute_files_to_target_dirs(RAW_DATA_PATH: Path, target_keys: dict[str, Path]) -> None:    
+def distrib_files_to_target_dirs(RAW_DATA_PATH: Path, target_keys: dict[str, Path]) -> None:    
     """Distributes files from a source directory to target directories based on file name prefixes.
 
     Args:
@@ -70,7 +70,7 @@ def distribute_files_to_target_dirs(RAW_DATA_PATH: Path, target_keys: dict[str, 
                 if filename.startswith(prefix):
                     destination_path = os.path.join(target_dir, filename)
                     shutil.move(source_path, destination_path)
-                    logging.info(f"Moved file {filename}")
+                    logger.info(f"Moved file {filename}")
                     break 
 
 # Function to distributing (move) incoming raw data into folders
@@ -94,13 +94,13 @@ def distribute_raw_data_to_folders(RAW_DATA_PATH: Path, fnc_target_dir, rtl_targ
         if os.path.isfile(source_path) and filename.startswith('FNC'):
             destination_path = os.path.join(fnc_target_dir, filename)
             shutil.move(source_path, destination_path)
-            logging.info(f"Moved file {filename}")
+            logger.info(f"Moved file {filename}")
 
         # If it is a file and starts with 'RTL', move to rtl_target_dir
         elif os.path.isfile(source_path) and filename.startswith('RTL'):
             destination_path = os.path.join(rtl_target_dir, filename)
             shutil.move(source_path, destination_path)
-            logging.info(f"Moved file {filename}")
+            logger.info(f"Moved file {filename}")
 
 
 # Function to read Excel files

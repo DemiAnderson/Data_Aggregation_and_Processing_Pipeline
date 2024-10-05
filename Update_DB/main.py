@@ -13,7 +13,7 @@ def main():
     'RTL': DATA['ms_sales']["FOLDER_PATH_IN"],
     }
     
-    distribute_files_to_target_dirs(RAW_DATA_PATH, target_keys)
+    distrib_files_to_target_dirs(RAW_DATA_PATH, target_keys)
         
     # Create SSH tunnel
     with create_ssh_tunnel() as ssh_tunnel:
@@ -27,7 +27,7 @@ def main():
         with Session() as session:
             # Iterate over dictionary items
             for table_name, table_info in DATA.items():  
-                logging.info(f"Processing table: {table_name}")
+                logger.info(f"Processing table: {table_name}")
             
                 # Read Excel files
                 df = read_excel_files(
@@ -58,7 +58,7 @@ def main():
             
             # Refreshing the materialized view
             for view in MAT_VIEWS:
-                logging.info(f"Refreshing materialized view: {view}")
+                logger.info(f"Refreshing materialized view - {view}")
                 session.execute(text(f"REFRESH MATERIALIZED VIEW {view}"))
             
             session.commit()

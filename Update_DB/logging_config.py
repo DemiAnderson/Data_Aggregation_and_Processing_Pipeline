@@ -1,70 +1,74 @@
-import logging
+from loguru import logger
 import time
-import colorlog
-
-from requests import get
+import requests
 from db_config import *  # DB_PARAMS, SSH_TUNNEL_PARAMS
 
-class TelegramHandler(logging.Handler):
+# Custom sink for Telegram logging
+def telegram_sink(message):
+    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
+    params = {
+        'chat_id': TG_CHAT_ID,
+        'text': message
+    }
+    requests.get(url, params=params)
+
+class ExecutionTimeFilter:
     def __init__(self):
-        logging.Handler.__init__(self)
+        self.start_time = time.time()
 
-    def emit(self, record):
-        log_entry = self.format(record)
-        url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
-        params = {
-            'chat_id': TG_CHAT_ID,
-            'text': log_entry
-        }
-        url_result = get(url, params=params)
+    def __call__(self, record):
+        record["extra"]["execution_time"] = f"{time.time() - self.start_time:.2f}s"
+        return True
 
-# Function to logging (decorator)
+# Function to configure logger
+def logger_config():
+    # Remove default handler
+    logger.remove()
+    
+    # Create execution time filter
+    execution_filter = ExecutionTimeFilter()
+    
+    # Add console handler with colors and execution time
+    logger.add(
+        sink=lambda msg: print(msg, end=''),
+        format=(
+            "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+            "<yellow>{extra[execution_time]: ^8}</yellow> | "
+            "<level>{level: ^8}</level> | "
+            "<cyan>{name: ^15}</cyan> | "
+            "<cyan>{function: ^25}</cyan> | "
+            "<level>{message}</level>"
+        ),
+        level="INFO",
+        colorize=True,
+        filter=execution_filter
+    )
+    
+    # Add Telegram handler with execution time
+    logger.add(
+        telegram_sink,
+        format="[{time:YYYY-MM-DD HH:mm:ss}] [{extra[execution_time]}] [{level}] {name} - {message}",
+        level="INFO",
+        filter=execution_filter
+    )
+    
+    return logger
+
+# Decorator for logging function execution
 def log_function_execution(func):
     def wrapper(*args, **kwargs):
         start_time = time.time()
-        logger.info(f"==> '{func.__name__}' - Start function")
+        function_name = f"{func.__name__: <28}"
+        logger.info(f"{function_name} - Start function")
         
         result = func(*args, **kwargs)
         
         end_time = time.time()
         execution_time = end_time - start_time
-        logger.info(f"==> '{func.__name__}' - Function executed. Execution time: {execution_time:.2f} sec.")
+        logger.info(f"{function_name} - Function executed.", extra={"execution_time": f"{execution_time:.2f}s"})
         
         return result
     return wrapper
 
-def logger_config():
-    # Create logging
-    logging.basicConfig(level=logging.INFO)
-    # formatter = logging.Formatter('[%(asctime)s] [%(levelname)-7s] %(module)-20s %(message)s')
-    # Create a colorized formatter
-    formatter = colorlog.ColoredFormatter(
-        '%(log_color)s[%(asctime)s] [%(levelname)-7s] %(module)-20s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        log_colors={
-            'DEBUG':    'cyan',
-            'INFO':     'green',
-            'WARNING':  'yellow',
-            'ERROR':    'red',
-            'CRITICAL': 'red,bg_white',
-        },
-        secondary_log_colors={},
-        style='%'
-    )
-    
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    
-    # Adding the default handlers
-    for handler in logging.root.handlers:
-        handler.setFormatter(formatter)
-    
-    # Adding the Telegram handler
-    telegram_handler = TelegramHandler()
-    telegram_handler.setLevel(logging.INFO)
-    telegram_handler.setFormatter(formatter)
-    logger.addHandler(telegram_handler)
-    
-    return logger
-
+# Configure logger
 logger = logger_config()
