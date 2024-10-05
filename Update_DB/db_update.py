@@ -1,7 +1,9 @@
+# import asyncio
 import os
 import shutil
 import warnings
 
+# from concurrent.futures import ThreadPoolExecutor
 import functools
 import pandas as pd
 from pathlib import Path
@@ -267,7 +269,7 @@ def create_db_engine(ssh_tunnel: SSHTunnelForwarder | None) -> sqlalchemy.engine
 
     DB_PARAMS['port'] = ssh_tunnel.local_bind_port
     engine_str = f"postgresql://{DB_PARAMS['user']}:{DB_PARAMS['password']}@{DB_PARAMS['host']}:{DB_PARAMS['port']}/{DB_PARAMS['database']}"
-    engine = create_engine(engine_str)
+    engine = create_engine(engine_str, pool_pre_ping=True)  # pool_pre_ping для проверки соединения
     return engine
 
 # Function to get date intersections
@@ -343,7 +345,7 @@ def delete_existing_data(engine: sqlalchemy.engine.Engine, session: sqlalchemy.o
 # Function to load data to database
 @exception
 @log_function_execution
-def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session: sqlalchemy.orm.Session, name: str, IF_EXISTS: str, FOLDER_PATH_IN: str) -> None:
+def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session: sqlalchemy.orm.Session, name: str, IF_EXISTS: str, FOLDER_PATH_IN: str, CHUNKSIZE: int = 10000) -> None:
     """Loads a DataFrame into a database table.
 
     Args:
@@ -359,7 +361,7 @@ def load_data_to_db(df: pd.DataFrame, engine: sqlalchemy.engine.Engine, session:
             if df is not None or not df.empty:
                 delete_existing_data(engine, session, name)
             
-        df.to_sql(name, conn, if_exists=IF_EXISTS, index=False)
+        df.to_sql(name, conn, if_exists=IF_EXISTS, index=False, chunksize=CHUNKSIZE)
 
 # Function to transform and load dict data to database  
 @exception 

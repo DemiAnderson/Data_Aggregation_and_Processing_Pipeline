@@ -1,5 +1,7 @@
 import logging
 import time
+import colorlog
+
 from requests import get
 from db_config import *  # DB_PARAMS, SSH_TUNNEL_PARAMS
 
@@ -34,7 +36,21 @@ def log_function_execution(func):
 def logger_config():
     # Create logging
     logging.basicConfig(level=logging.INFO)
-    formatter = logging.Formatter('[%(asctime)s] [%(levelname)-7s] %(module)-20s %(message)s')
+    # formatter = logging.Formatter('[%(asctime)s] [%(levelname)-7s] %(module)-20s %(message)s')
+    # Create a colorized formatter
+    formatter = colorlog.ColoredFormatter(
+        '%(log_color)s[%(asctime)s] [%(levelname)-7s] %(module)-20s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        log_colors={
+            'DEBUG':    'cyan',
+            'INFO':     'green',
+            'WARNING':  'yellow',
+            'ERROR':    'red',
+            'CRITICAL': 'red,bg_white',
+        },
+        secondary_log_colors={},
+        style='%'
+    )
     
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
