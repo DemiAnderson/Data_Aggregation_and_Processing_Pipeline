@@ -56,3 +56,14 @@ LIST_OF_SHEETS = [
 
 # List of materialized views to be refreshed in the database
 MAT_VIEWS = ["public.ms_basic_mv", "public.ms_basic_mini"]
+
+# Определяем путь для сохранения файла
+DOWNLOAD_PATH = r"C:\Users\dmandree\Downloads\TL_new" 
+
+# Константы конфигурации
+BASE_URL = "https://smrt.guess.eu/turnover/list#/byparams/"
+PREVIOUS_DAYS = 14
+MAX_WAIT_TIME = 10
+DEFAULT_RETRY_ATTEMPTS = 3
+
+

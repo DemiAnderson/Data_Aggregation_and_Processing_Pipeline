@@ -1,157 +1,211 @@
-import csv
-import sys
+from typing import List, Tuple, Dict, Optional, Callable
+from datetime import datetime, timedelta
 import os
-import glob
+from functools import partial
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
-from datetime import datetime, timedelta
-from time import sleep
+
+# Импорт конфигурации из внешних файлов
+from db_config import *
+from exception_config import * # exception
+from logging_config import * # logger
+from params import *
 
 
-
-LOGIN = "dmitry.andreev@guess.eu"
-PASSWORD = "!1296!Demi!"
-
-# Определяем вчерашнюю дату
-yesterday = datetime.now() - timedelta(days=1)
-
-previous_days = 29
-
-def get_date_list(yesterday):
-    if yesterday.weekday() == 6:  # 3 соответствует четвергу (0 - понедельник, 6 - воскресенье)
-        date_list = [(yesterday - timedelta(days=i)) for i in range(previous_days)]
-        return date_list
-    else:
-        return [yesterday]
-
-# Получаем список дат
-dates = get_date_list(yesterday)
-
-# Определяем date_str для имени файла (первая дата в списке)
-date_str = dates[0]
-
-# Определяем путь для сохранения файла
-download_path = r"C:\Users\dmandree\Downloads\TL_new" 
-
-# Формируем имя файла
-file_name = f"TurnoverList ({date_str}).xlsx"
-
-# Настройка опций Chrome
-chrome_options = Options()
-prefs = {
-    "download.default_directory": download_path,
+# Базовая конфигурация браузера
+CHROME_PREFS = {
     "download.prompt_for_download": False,
     "download.directory_upgrade": True,
-    "safebrowsing.enabled": True,
-    "download.default_filename": file_name  # Устанавливаем имя файла по умолчанию
+    "safebrowsing.enabled": True
 }
-chrome_options.add_experimental_option("prefs", prefs)
 
-url = "https://smrt.guess.eu/turnover/list#/byparams/"
+def create_action(action_type: str, locator: Tuple[str, str], text: Optional[str] = None) -> Dict:
+    """Создает словарь действия."""
+    return {
+        "action_type": action_type,
+        "locator": locator,
+        "text": text
+    }
 
-# Инициализация веб-драйвера
-driver = webdriver.Chrome(options=chrome_options)
-driver.get(url)
+def get_chrome_options(download_path: str) -> Options:
+    """Создает настройки для Chrome."""
+    chrome_options = Options()
+    prefs = {**CHROME_PREFS, "download.default_directory": download_path}
+    chrome_options.add_experimental_option("prefs", prefs)
+    
+    # Добавляем аргументы для отключения ошибок
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--disable-features=VizDisplayCompositor')
+    chrome_options.add_argument('--disable-features=IsolateOrigins,site-per-process')
+    
+    # Отключаем логирование
+    chrome_options.add_argument('--log-level=3')
+    chrome_options.add_argument('--silent')
+    
+    # Добавляем опцию для запуска в безголовом режиме
+    # chrome_options.add_argument('--headless')
+    
+    return chrome_options
 
-# Ожидание появления кнопки и клик по ней
-wait = WebDriverWait(driver, 20)
+def create_driver(download_path: str) -> webdriver.Chrome:
+    """Создает настроенный экземпляр драйвера."""
+    options = get_chrome_options(download_path)
+    
+    # Добавляем опции для отключения логов DevTools
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    options.add_argument('--disable-logging')
+    options.add_argument('--log-level=3')
+    
+    # Отключаем вывод сообщений в консоль
+    os.environ['WDM_LOG_LEVEL'] = '0'
+    
+    return webdriver.Chrome(options=options)
 
-# Определение функции interact_with_element
-def interact_with_element(locator, action='click', text=None, max_attempts=3):
+def get_dates_to_process(base_date: datetime) -> List[datetime]:
+    """Возвращает список дат для обработки."""
+    if base_date.weekday() == 5:  # суббота
+        return [base_date - timedelta(days=i) for i in range(PREVIOUS_DAYS)]
+    return [base_date]
+
+def calculate_calendar_position(date: datetime) -> Tuple[int, int]:
+    """Вычисляет позицию даты в календаре."""
+    first_day = date.replace(day=1)
+    first_weekday = first_day.weekday()
+    
+    # Корректировка для воскресенья
+    if first_weekday == 6:  # Если первый день - воскресенье
+        first_weekday = -1
+    
+    week = (date.day + first_weekday) // 7 + 1
+    weekday = (date.weekday() + 1) % 7 + 1
+    return week, weekday
+
+def get_date_selector(date: datetime, index: int = 0) -> str:
+    """Генерирует CSS-селектор для выбора даты."""
+    week, weekday = calculate_calendar_position(date)
+    base_selector = f"tr:nth-child({week}) > td:nth-child({weekday})"
+    
+    if index == 0:
+        return f"body > div.datepicker.dropdown-menu > div.datepicker-days > table > tbody > {base_selector}"
+    
+    calendar_index = 70 + (index - 1) * 2
+    return f"body > div:nth-child({calendar_index}) > div.datepicker-days > table > tbody > {base_selector}"
+
+def get_authorization_actions(login: str, password: str) -> List[Dict]:
+    """Создает список действий для авторизации."""
+    return [
+        create_action('click', (By.ID, "GuessAzureAD")),
+        create_action('input', (By.ID, "i0116"), login),
+        create_action('click', (By.ID, "idSIButton9")),
+        create_action('input', (By.ID, "i0118"), password),
+        create_action('click', (By.ID, "idSIButton9"))
+    ]
+
+def get_processing_actions(date_selector: str) -> List[Dict]:
+    """Создает список действий для обработки даты."""
+    return [
+        create_action('click', (By.CSS_SELECTOR, "button.btn-block")),
+        create_action('click', (By.CSS_SELECTOR, date_selector)),
+        create_action('click', (By.CSS_SELECTOR, "button.red")),
+        create_action('click', (By.CSS_SELECTOR, "div.col-md-6:nth-child(2) > div:nth-child(1) > ul:nth-child(1) > li:nth-child(2) > ul:nth-child(1) > li:nth-child(1) > button:nth-child(1) > i:nth-child(1)"))
+    ]
+
+def execute_action(wait: WebDriverWait, action: Dict) -> None:
+    """Выполняет отдельное действие."""
+    element = wait.until(EC.element_to_be_clickable(action["locator"]))
+    
+    if action["action_type"] == 'click':
+        element.click()
+    elif action["action_type"] == 'input' and action["text"]:
+        element.clear()
+        element.send_keys(action["text"])
+
+def retry_action(action_func: Callable, max_attempts: int = DEFAULT_RETRY_ATTEMPTS) -> None:
+    """Выполняет действие с повторными попытками."""
     for attempt in range(max_attempts):
         try:
-            element = wait.until(EC.presence_of_element_located(locator))
-            if action == 'click':
-                element.click()
-            elif action == 'input':
-                element.clear()
-                element.send_keys(text)
+            action_func()
             return
         except (TimeoutException, StaleElementReferenceException):
             if attempt == max_attempts - 1:
                 raise
-            sleep(1)
 
-def get_date_selector(date, index=0):
-    # Получаем первый день месяца
-    first_day = date.replace(day=1)
-    # Определяем, с какого дня недели начинается месяц (0 - понедельник, 6 - воскресенье)
-    first_weekday = first_day.weekday()
-    # Вычисляем номер недели и дня недели для нужной даты
-    week = (date.day + first_weekday - 1) // 7 + 1
-    weekday = (date.weekday() + 1) % 7 + 1  # +1, так как CSS-селекторы начинаются с 1
-
-    if index == 0:
-        return f"body > div.datepicker.dropdown-menu > div.datepicker-days > table > tbody > tr:nth-child({week}) > td:nth-child({weekday})"
-    else:
-        return f"body > div:nth-child({70 + (index - 1) * 2}) > div.datepicker-days > table > tbody > tr:nth-child({week}) > td:nth-child({weekday})"
-        print(index, 70 + (index - 1) * 2)
-
-# date_selector = get_date_selector(yesterday)
-
-# Объединенный словарь действий авторизаии
-authorization_actions = [
-    {'action': 'click', 'locator': (By.ID, "GuessAzureAD")},
-    {'action': 'input', 'locator': (By.ID, "i0116"), 'text': LOGIN},
-    {'action': 'click', 'locator': (By.ID, "idSIButton9")},
-    {'action': 'input', 'locator': (By.ID, "i0118"), 'text': PASSWORD},
-    {'action': 'click', 'locator': (By.ID, "idSIButton9")}
-]
-
-
-# Функция для выполнения последовательности действий
-def perform_actions(actions):
+def execute_actions(wait: WebDriverWait, actions: List[Dict]) -> None:
+    """Выполняет список действий последовательно."""
     for action in actions:
-        sleep(1)
-        if action['action'] == 'click':
-            interact_with_element(action['locator'])
-        elif action['action'] == 'input':
-            interact_with_element(action['locator'], action='input', text=action['text'])
+        retry_action(lambda: execute_action(wait, action))
 
-# Выполнение всех действий с обработкой исключений
-try:
-    perform_actions(authorization_actions)
+def check_file_downloaded(download_path: str, expected_path: str) -> bool:
+    """Проверяет загрузку файла и переименовывает его."""
+    for file in os.listdir(download_path):
+        if file.startswith("TurnoverList.xlsx"):
+            old_file = os.path.join(download_path, file)
+            try:
+                if os.path.exists(expected_path):
+                    os.remove(expected_path)  # Удаляем существующий файл
+                os.rename(old_file, expected_path)
+                return True
+            except OSError as e:
+                logger.error(f"Ошибка при переименовании файла: {e}")
+                return False
+    return False
+
+def wait_for_file(download_path: str, expected_path: str) -> None:
+    """Ожидает загрузку файла."""
+    checker = partial(check_file_downloaded, download_path, expected_path)
+    WebDriverWait(None, MAX_WAIT_TIME).until(lambda _: checker())
+
+def process_date(
+    driver: webdriver.Chrome,
+    wait: WebDriverWait,
+    download_path: str,
+    date: datetime,
+    index: int
+) -> None:
+    """Обрабатывает одну дату."""
+    date_selector = get_date_selector(date, index)
+    formatted_date = date.strftime("%d.%m.%y")
+    file_path = os.path.join(download_path, f"TurnoverList ({formatted_date}).xlsx")
     
-    for index, date in enumerate(dates):
-        date_selector = get_date_selector(date, index)
+    actions = get_processing_actions(date_selector)
+    execute_actions(wait, actions)
+    wait_for_file(download_path, file_path)
 
-        date = date.strftime("%d.%m.%y")
-        file_name_date = f"TurnoverList ({date}).xlsx"
-
-        # Объединенный словарь действий обработки
-        processing_actions = [
-            {'action': 'click', 'locator': (By.CSS_SELECTOR, "button.btn-block")},
-            {'action': 'click', 'locator': (By.CSS_SELECTOR, date_selector)},
-            {'action': 'click', 'locator': (By.CSS_SELECTOR, "button.red")},
-            {'action': 'click', 'locator': (By.CSS_SELECTOR, "div.col-md-6:nth-child(2) > div:nth-child(1) > ul:nth-child(1) > li:nth-child(2) > ul:nth-child(1) > li:nth-child(1) > button:nth-child(1) > i:nth-child(1)")}
-        ]
+def run_selenium_process(
+    login: str,
+    password: str,
+    download_path: str,
+) -> None:
+    """Запускает основной процесс."""
+    logger.info("Starting Function Selenium")
+    base_date = datetime.now() - timedelta(days=1)
+    
+    driver = create_driver(download_path)
+    
+    try:
+        driver.get(BASE_URL)
+        wait = WebDriverWait(driver, MAX_WAIT_TIME)
         
-        perform_actions(processing_actions)
+        # Авторизация
+        auth_actions = get_authorization_actions(login, password)
+        execute_actions(wait, auth_actions)
+        
+        # Обработка дат
+        dates = get_dates_to_process(base_date)
+        for index, date in enumerate(dates):
+            logger.info(f"Processing date: {date.day:02d}.{date.month:02d}.{date.year}")
+            process_date(driver, wait, download_path, date, index)
+    
+    finally:
+        driver.quit()
+        logger.info("Function Selenium executed")
 
-        sleep(1)
-
-        # Ожидание загрузки файла
-        file_path = os.path.join(download_path, file_name_date)
-        max_wait_time = 10
-
-        def file_downloaded():
-            for file in os.listdir(download_path):
-                if file.startswith("TurnoverList.xlsx"):
-                    old_file = os.path.join(download_path, file)
-                    os.rename(old_file, file_path)
-                    return True
-            return False
-
-
-        WebDriverWait(driver, max_wait_time).until(lambda x: file_downloaded())
-        print(f"Файл успешно загружен и переименован: {file_path}")
-
-except Exception as e:
-    print(f"Ошибка при выполнении операций: {e}")
-
-driver.quit()
-sys.exit(1)
+if __name__ == "__main__":
+    run_selenium_process(LOGIN, PASSWORD, DOWNLOAD_PATH)
