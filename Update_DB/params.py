@@ -1,3 +1,4 @@
+# Parameters for file processings
 DATA = {
     "sales": {
         "FOLDER_PATH_IN": 'C:\\Users\\dmandree\\Downloads\\TL_new',
@@ -28,7 +29,13 @@ DATA = {
     }
 }
 
+# Path to the raw data files for processing
 RAW_DATA_PATH = '\\\\rumo1w6vfs001.guess.eu\\Data\\Finance\\Andreev\\MS Data'
+
+TARGET_KEYS = {
+    'FNC': DATA['ms_stock']["FOLDER_PATH_IN"],
+    'RTL': DATA['ms_sales']["FOLDER_PATH_IN"],
+}
 
 # File for Dict path
 DICT_PATH = 'C:\\Users\\dmandree\\OneDrive - Guess Inc\\D Project\\Dict\\Mapping.xlsx'
@@ -47,4 +54,5 @@ LIST_OF_SHEETS = [
     "Targets"
     ]
 
+# List of materialized views to be refreshed in the database
 MAT_VIEWS = ["public.ms_basic_mv", "public.ms_basic_mini"]

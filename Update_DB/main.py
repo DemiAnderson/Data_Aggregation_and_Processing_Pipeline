@@ -7,13 +7,8 @@ from logging_config import * # logger
 # Main function
 @log_function_execution
 def main():
-    
-    target_keys = {
-    'FNC': DATA['ms_stock']["FOLDER_PATH_IN"],
-    'RTL': DATA['ms_sales']["FOLDER_PATH_IN"],
-    }
-    
-    distrib_files_to_target_dirs(RAW_DATA_PATH, target_keys)
+    # Distribute files from the raw data path to the target directories based on the specified keys  
+    distrib_files_to_target_dirs(RAW_DATA_PATH, TARGET_KEYS)
         
     # Create SSH tunnel
     with create_ssh_tunnel() as ssh_tunnel:
@@ -58,9 +53,10 @@ def main():
             
             # Refreshing the materialized view
             for view in MAT_VIEWS:
-                logger.info(f"Refreshing materialized view - {view}")
+                logger.info(f"Refreshing materialized view | {view}")
                 session.execute(text(f"REFRESH MATERIALIZED VIEW {view}"))
             
+            # End session
             session.commit()
 
 if __name__ == '__main__':

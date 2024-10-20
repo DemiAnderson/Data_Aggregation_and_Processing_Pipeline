@@ -17,7 +17,6 @@ class ExecutionTimeFilter:
         self.start_time = time.time()
 
     def __call__(self, record):
-        # Если поле 'execution_time' отсутствует, добавляем его
         if 'execution_time' not in record["extra"]:
             record["extra"]["execution_time"] = f"{time.time() - self.start_time:.2f}s"
         return True
@@ -38,7 +37,7 @@ def logger_config():
             "<yellow>{extra[execution_time]: ^8}</yellow> | "
             "<level>{level: ^8}</level> | "
             "<cyan>{name: ^15}</cyan> | "
-            "<cyan>{function: ^25}</cyan> | "
+            "<cyan>{function: ^28}</cyan> | "
             "<level>{message}</level>"
         ),
         level="INFO",
@@ -68,7 +67,7 @@ def log_function_execution(func):
         end_time = time.time()
         execution_time = end_time - start_time
         
-        # Обновляем значение execution_time
+        # Updating the value of execution_time
         execution_time_str = f"{execution_time:.2f}s".ljust(8)
         logger.info(
             f"{function_name} | {'Function executed': <17} | {execution_time_str: ^8}", 
