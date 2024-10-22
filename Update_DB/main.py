@@ -1,3 +1,4 @@
+from fetch_data_process import *
 from db_update import * # load_data_to_db, delete_intersections, get_intersections, process_data, read_excel_files, load_excel_sheets, transform_and_load_dict, create_db_engine, create_ssh_tunnel
 from params import * # DATA, DICT_PATH, LIST_OF_SHEETS
 from logging_config import * # logger
@@ -7,6 +8,7 @@ from logging_config import * # logger
 # Main function
 @log_function_execution
 def main():
+    fetch_external_data(DOWNLOAD_PATH)
     # Distribute files from the raw data path to the target directories based on the specified keys  
     distrib_files_to_target_dirs(RAW_DATA_PATH, TARGET_KEYS)
         
@@ -45,16 +47,15 @@ def main():
                 # Load data to database
                 load_data_to_db(df, engine, session, table_name, table_info["IF_EXISTS"], table_info["FOLDER_PATH_IN"])   
                 
-            # Create Dict 
-            dfs = load_excel_sheets(DICT_PATH, LIST_OF_SHEETS)
+            # Create Dicts 
+            dicts = load_excel_sheets(DICT_PATH, LIST_OF_SHEETS)
             
-            #transform and load dict data to database
-            transform_and_load_dict(engine, session, dfs)
+            #transform and load dicts data to database
+            transform_and_load_dict(engine, session, dicts)
             
             # Refreshing the materialized view
             for view in MAT_VIEWS:
-                logger.info(f"Refreshing materialized view | {view}")
-                session.execute(text(f"REFRESH MATERIALIZED VIEW {view}"))
+                refresh_materialized_views(session, view)
             
             # End session
             session.commit()

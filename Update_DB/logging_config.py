@@ -36,7 +36,7 @@ def logger_config():
             "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
             "<yellow>{extra[execution_time]: ^8}</yellow> | "
             "<level>{level: ^8}</level> | "
-            "<cyan>{name: ^15}</cyan> | "
+            "<cyan>{name: ^19}</cyan> | "
             "<cyan>{function: ^28}</cyan> | "
             "<level>{message}</level>"
         ),

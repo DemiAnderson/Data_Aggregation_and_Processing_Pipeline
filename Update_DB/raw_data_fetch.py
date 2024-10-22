@@ -17,13 +17,6 @@ from logging_config import * # logger
 from params import *
 
 
-# Базовая конфигурация браузера
-CHROME_PREFS = {
-    "download.prompt_for_download": False,
-    "download.directory_upgrade": True,
-    "safebrowsing.enabled": True
-}
-
 def create_action(action_type: str, locator: Tuple[str, str], text: Optional[str] = None) -> Dict:
     """Создает словарь действия."""
     return {
@@ -178,34 +171,4 @@ def process_date(
     execute_actions(wait, actions)
     wait_for_file(download_path, file_path)
 
-def run_selenium_process(
-    login: str,
-    password: str,
-    download_path: str,
-) -> None:
-    """Запускает основной процесс."""
-    logger.info("Starting Function Selenium")
-    base_date = datetime.now() - timedelta(days=1)
-    
-    driver = create_driver(download_path)
-    
-    try:
-        driver.get(BASE_URL)
-        wait = WebDriverWait(driver, MAX_WAIT_TIME)
-        
-        # Авторизация
-        auth_actions = get_authorization_actions(login, password)
-        execute_actions(wait, auth_actions)
-        
-        # Обработка дат
-        dates = get_dates_to_process(base_date)
-        for index, date in enumerate(dates):
-            logger.info(f"Processing date: {date.day:02d}.{date.month:02d}.{date.year}")
-            process_date(driver, wait, download_path, date, index)
-    
-    finally:
-        driver.quit()
-        logger.info("Function Selenium executed")
 
-if __name__ == "__main__":
-    run_selenium_process(LOGIN, PASSWORD, DOWNLOAD_PATH)

@@ -7,14 +7,14 @@ This script is designed to automate the process of data accumulation, transforma
 
 # Prerequisites:
 
-    Python 3.x
-    A requirements.txt file is provided for installing the necessary dependencies:
+Python 3.x
+A requirements.txt file is provided for installing the necessary dependencies:
 
     bash
 
     pip install -r requirements.txt
 
-    Note: This code is intended for use in a closed company environment, and therefore, the db_config file is not included in this repository. You will need to set up your own database configuration separately.
+Note: This code is intended for use in a closed company environment, and therefore, the db_config file is not included in this repository. You will need to set up your own database configuration separately.
 
 # Installation and Setup:
 

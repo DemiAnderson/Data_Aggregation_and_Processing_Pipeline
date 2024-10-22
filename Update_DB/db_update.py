@@ -359,3 +359,9 @@ def transform_and_load_dict(engine: sqlalchemy.engine.Engine, session: sqlalchem
             # with session.begin():
             df.to_sql(table_name, conn, if_exists='append', index=False)
 
+# Function to refresh materialized views
+@exception 
+@log_function_execution
+def refresh_materialized_views(session, view):
+    logger.info(f"Refreshing materialized view | {view}")
+    session.execute(text(f"REFRESH MATERIALIZED VIEW {view}"))

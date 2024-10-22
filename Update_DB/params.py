@@ -66,4 +66,11 @@ PREVIOUS_DAYS = 14
 MAX_WAIT_TIME = 10
 DEFAULT_RETRY_ATTEMPTS = 3
 
+# Базовая конфигурация браузера
+CHROME_PREFS = {
+    "download.prompt_for_download": False,
+    "download.directory_upgrade": True,
+    "safebrowsing.enabled": True
+}
+
 
