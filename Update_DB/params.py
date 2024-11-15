@@ -1,8 +1,10 @@
 # Parameters for file processings
+BASE_PATH = 'C:\\Users\\dmandree\\OneDrive - Guess Inc\\data_flow'
+
 DATA = {
     "sales": {
-        "FOLDER_PATH_IN": 'C:\\Users\\dmandree\\Downloads\\TL_new',
-        "FOLDER_PATH_OUT": 'C:\\Users\\dmandree\\Downloads\\TL_arch',
+        "FOLDER_PATH_IN": f'{BASE_PATH}\\TL_new',
+        "FOLDER_PATH_OUT": f'{BASE_PATH}\\TL_arch',
         "SHEET": 'TurnoverList',
         "COL_NAMES": ['Day', 'Store', 'Company', 'Open', 'Amount', 'Curr', 'Pcs', 'Rcp', 'People', 'Hours', 'Work', 'Comp:', 'Open_1', 'Amount_1', 'Curr_1', 'Pcs_1', 'Rcp_1', 'People_1', 'Hours_1', 'Work_1'],
         "COMPANIES": ['Guess Kazakhstan', 'Guess CIS'],
@@ -10,8 +12,8 @@ DATA = {
         "IF_EXISTS": 'append'
     },
     "ms_sales": {
-        "FOLDER_PATH_IN": 'C:\\Users\\dmandree\\Downloads\\RTL_new',
-        "FOLDER_PATH_OUT": 'C:\\Users\\dmandree\\Downloads\\RTL_arch',
+        "FOLDER_PATH_IN": f'{BASE_PATH}\\RTL_new',
+        "FOLDER_PATH_OUT": f'{BASE_PATH}\\RTL_arch',
         "SHEET": 'RTL50000_by_season_by_store old',
         "COL_NAMES": ['Company', 'Country', 'Day', 'Mfg Season', 'Line Code', 'Gender', 'Dept Group', 'Dept', 'Sub Dept', 'Class', 'Class_1', 'Style', 'Style_1', 'Chain', 'Store', 'Store_1', 'Metrics', 'Ttl Sls Qty', 'TTL Curr Rtl Price €', 'Discount €', 'Ttl Sls €', 'Ttl Cost LC', 'Ttl Sls Trasp Cost LC', 'Ttl Cost €', 'Ttl Sls LC', 'Ttl Sls Trasp Cost €'],
         "COMPANIES": ['RU', 'KZ'],
@@ -19,8 +21,8 @@ DATA = {
         "IF_EXISTS": 'append'
     },
     "ms_stock": {
-        "FOLDER_PATH_IN": 'C:\\Users\\dmandree\\Downloads\\FNC_new',
-        "FOLDER_PATH_OUT": 'C:\\Users\\dmandree\\Downloads\\FNC_arch',
+        "FOLDER_PATH_IN": f'{BASE_PATH}\\FNC_new',
+        "FOLDER_PATH_OUT": f'{BASE_PATH}\\FNC_arch',
         "SHEET": 'FNC03-50001-Margin_stock all st',
         "COL_NAMES": ['Company', 'Day', 'Store', 'Store_1', 'Mfg Season', 'Line Code', 'Line_Code_1', 'Style', 'Style_1', 'Sub_Dept', 'Sub_Dept_1', 'Metrics', 'TTL EOH Ttl Qty', 'TTL Loading Cost €', 'TTL Loading Cost LC', 'TTL Trasp Cost €', 'Cost €'],
         "COMPANIES": ['RU', 'KZ'],
@@ -56,9 +58,6 @@ LIST_OF_SHEETS = [
 
 # List of materialized views to be refreshed in the database
 MAT_VIEWS = ["public.ms_basic_mv", "public.ms_basic_mini"]
-
-# Определяем путь для сохранения файла
-DOWNLOAD_PATH = r"C:\Users\dmandree\Downloads\TL_new" 
 
 # Константы конфигурации
 BASE_URL = "https://smrt.guess.eu/turnover/list#/byparams/"

@@ -43,7 +43,7 @@ def distrib_files_to_target_dirs(RAW_DATA_PATH: Path, target_keys: dict[str, Pat
                 if filename.startswith(prefix):
                     destination_path = os.path.join(target_dir, filename)
                     shutil.move(source_path, destination_path)
-                    logger.info(f"Moved file {filename}")
+                    logger.info(f"moved file {filename}")
                     break 
 
 # Function to distributing (move) incoming raw data into folders
@@ -67,13 +67,13 @@ def distribute_raw_data_to_folders(RAW_DATA_PATH: Path, fnc_target_dir, rtl_targ
         if os.path.isfile(source_path) and filename.startswith('FNC'):
             destination_path = os.path.join(fnc_target_dir, filename)
             shutil.move(source_path, destination_path)
-            logger.info(f"Moved file {filename}")
+            logger.info(f"moved file {filename}")
 
         # If it is a file and starts with 'RTL', move to rtl_target_dir
         elif os.path.isfile(source_path) and filename.startswith('RTL'):
             destination_path = os.path.join(rtl_target_dir, filename)
             shutil.move(source_path, destination_path)
-            logger.info(f"Moved file {filename}")
+            logger.info(f"moved file {filename}")
 
 
 # Function to read Excel files
@@ -99,14 +99,14 @@ def read_excel_files(FOLDER_PATH_IN: Path, FOLDER_PATH_OUT: Path, SHEET: str, SK
 
     file_list = os.listdir(FOLDER_PATH_IN)
     if not file_list:
-        logger.info("No Excel files found in the input folder.")
+        logger.info("no Excel files found in the input folder.")
         return None
     
     file_list = os.listdir(FOLDER_PATH_IN)
     dfs = []
     for file in file_list:
         file_path = os.path.join(FOLDER_PATH_IN, file)
-        logger.info(f"Processing file: {file}")
+        logger.info(f"processing file: {file}")
         with pd.ExcelFile(file_path) as xls:
             data = pd.read_excel(xls, sheet_name=SHEET, skiprows=SKIP, names=COL_NAMES)
             dfs.append(data)
@@ -118,7 +118,7 @@ def read_excel_files(FOLDER_PATH_IN: Path, FOLDER_PATH_OUT: Path, SHEET: str, SK
         df = pd.concat(dfs, ignore_index=True)
         return df
     else:
-        logger.info("No data read from the files.")
+        logger.info("no data read from the files.")
         return None
     
 # Function to move file to archive folder
@@ -162,7 +162,7 @@ def load_excel_sheets(DICT_PATH: Path, LIST_OF_SHEETS: list[str]) -> dict[str, p
 
     sheets_data = {}
     for sheet in LIST_OF_SHEETS:
-        logger.info(f"Loading sheet: {sheet}")
+        logger.info(f"loading sheet: {sheet}")
         sheets_data[sheet] = pd.read_excel(DICT_PATH, sheet_name=sheet)
     return sheets_data
 
@@ -281,7 +281,7 @@ def delete_intersections(session: sessionmaker, intersection_df: list[str], tabl
     """
     
     if not intersection_df:
-        logger.info("No intersections to delete.")
+        logger.info("no intersections to delete.")
         return
 
     delete_query = text(f'DELETE FROM {table_name} WHERE day = ANY(:keys)')
@@ -349,7 +349,7 @@ def transform_and_load_dict(engine: sqlalchemy.engine.Engine, session: sqlalchem
     
     with engine.connect() as conn:
         for df_name, df in dfs.items():
-            logger.info(f"Processing df: {df_name}")
+            logger.info(f"processing df: {df_name}")
             table_name = df_name.lower()
             df.columns = df.columns.str.lower()
             
@@ -363,5 +363,5 @@ def transform_and_load_dict(engine: sqlalchemy.engine.Engine, session: sqlalchem
 @exception 
 @log_function_execution
 def refresh_materialized_views(session, view):
-    logger.info(f"Refreshing materialized view | {view}")
+    logger.info(f"refreshing materialized view | {view}")
     session.execute(text(f"REFRESH MATERIALIZED VIEW {view}"))

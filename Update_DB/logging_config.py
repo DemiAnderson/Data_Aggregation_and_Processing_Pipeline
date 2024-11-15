@@ -60,7 +60,7 @@ def log_function_execution(func):
     def wrapper(*args, **kwargs):
         start_time = time.time()
         function_name = f"{func.__name__: <28}"
-        logger.info(f"{function_name} | {'Start function': <17} | {' ' * 8}")
+        logger.info(f"{function_name} | {'start function': <17} | {' ' * 8}")
         
         result = func(*args, **kwargs)
         
@@ -70,7 +70,7 @@ def log_function_execution(func):
         # Updating the value of execution_time
         execution_time_str = f"{execution_time:.2f}s".ljust(8)
         logger.info(
-            f"{function_name} | {'Function executed': <17} | {execution_time_str: ^8}", 
+            f"{function_name} | {'function executed': <17} | {execution_time_str: ^8}", 
             extra={"execution_time": f"{execution_time:.2f}s"}
         )
         

@@ -1,14 +1,14 @@
 from fetch_data_process import *
 from db_update import * # load_data_to_db, delete_intersections, get_intersections, process_data, read_excel_files, load_excel_sheets, transform_and_load_dict, create_db_engine, create_ssh_tunnel
 from params import * # DATA, DICT_PATH, LIST_OF_SHEETS
-from logging_config import * # logger
-# from sqlalchemy import text  # Импорт для выполнения SQL-запроса            
+from logging_config import * # logger         
 
 
 # Main function
 @log_function_execution
 def main():
-    fetch_external_data(DOWNLOAD_PATH)
+    
+    fetch_external_data(DATA["sales"]["FOLDER_PATH_IN"])
     # Distribute files from the raw data path to the target directories based on the specified keys  
     distrib_files_to_target_dirs(RAW_DATA_PATH, TARGET_KEYS)
         
@@ -24,7 +24,7 @@ def main():
         with Session() as session:
             # Iterate over dictionary items
             for table_name, table_info in DATA.items():  
-                logger.info(f"Processing table: {table_name}")
+                logger.info(f"processing table: {table_name}")
             
                 # Read Excel files
                 df = read_excel_files(
