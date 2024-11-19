@@ -161,9 +161,9 @@ def get_authorization_actions(login: str, password: str) -> List[Dict]:
         List[Dict]: A list of actions to perform authorization.
     """
     return [
-        create_action('click', (By.ID, "GuessAzureAD")),
-        create_action('input', (By.ID, "i0116"), login),
-        create_action('click', (By.ID, "idSIButton9")),
+        create_action('click', (By.ID, "email")),
+        create_action('input', (By.ID, "email"), login),
+        create_action('click', (By.ID, "continue")),
         create_action('input', (By.ID, "i0118"), password),
         create_action('click', (By.ID, "idSIButton9"))
     ]
