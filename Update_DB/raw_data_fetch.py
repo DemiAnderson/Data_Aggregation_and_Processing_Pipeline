@@ -8,13 +8,19 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
+from selenium.common.exceptions import (
+    TimeoutException,
+    StaleElementReferenceException
+)
 
 # Import configuration from external files
-from db_config import *
-from exception_config import * # exception
-from logging_config import * # logger
-from params import *
+from logging_config import logger
+from params import (
+    CHROME_PREFS,
+    DEFAULT_RETRY_ATTEMPTS,
+    MAX_WAIT_TIME,
+    PREVIOUS_DAYS
+)
 
 
 # Function to create an action

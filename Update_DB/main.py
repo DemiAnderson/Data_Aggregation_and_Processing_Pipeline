@@ -1,9 +1,30 @@
-from fetch_data_process import *
-from db_update import * # load_data_to_db, delete_intersections, get_intersections, process_data, read_excel_files, load_excel_sheets, transform_and_load_dict, create_db_engine, create_ssh_tunnel
-from params import * # DATA, DICT_PATH, LIST_OF_SHEETS
-from logging_config import * # logger         
 
+from db_update import (
+    create_db_engine,
+    create_ssh_tunnel,
+    delete_intersections,
+    distrib_files_to_target_dirs,
+    get_intersections,
+    load_excel_sheets,
+    load_data_to_db,
+    process_data,
+    read_excel_files,
+    refresh_materialized_views,
+    transform_and_load_dict,
+    sessionmaker
+)
+from fetch_data_process import fetch_external_data
+from logging_config import logger, log_function_execution
+from params import (
+    DATA,
+    DICT_PATH,
+    LIST_OF_SHEETS,
+    RAW_DATA_PATH,
+    TARGET_KEYS,
+    MAT_VIEWS
+)
 
+      
 # Main function
 @log_function_execution
 def main():

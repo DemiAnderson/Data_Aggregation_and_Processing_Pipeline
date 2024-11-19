@@ -1,8 +1,17 @@
 from datetime import datetime, timedelta
 
-from raw_data_fetch import *
-from logging_config import *
-from params import *
+from selenium.webdriver.support.ui import WebDriverWait
+
+from db_config import LOGIN, PASSWORD
+from logging_config import logger, log_function_execution
+from params import BASE_URL, DATA, MAX_WAIT_TIME
+from raw_data_fetch import (
+    create_driver,
+    execute_actions,
+    get_authorization_actions,
+    get_dates_to_process,
+    process_date
+)
 
 
 @log_function_execution

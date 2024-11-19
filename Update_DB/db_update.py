@@ -1,25 +1,20 @@
-# import asyncio
 import os
 import shutil
 import warnings
-
-# from concurrent.futures import ThreadPoolExecutor
-import functools
-import pandas as pd
 from pathlib import Path
-import sqlalchemy
-from sqlalchemy import create_engine, text, MetaData, Table
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import SQLAlchemyError
-from sshtunnel import SSHTunnelForwarder, BaseSSHTunnelForwarderError
 
-# Импортируем логгер и конфигурацию подключения к базе данных
-from exception_config import * # exception
-from db_config import * # DB_PARAMS, SSH_TUNNEL_PARAMS
-from logging_config import * # logger
+import pandas as pd
+import sqlalchemy
+from sqlalchemy import create_engine, text, MetaData
+from sqlalchemy.orm import sessionmaker
+from sshtunnel import SSHTunnelForwarder
+
+from exception_config import exception
+from db_config import DB_PARAMS, SSH_TUNNEL_PARAMS
+from logging_config import logger, log_function_execution
+
 
 warnings.filterwarnings("ignore", category=UserWarning)
-
 
 # Function to distribute files from a source directory to target directories based on file name prefixes
 @exception

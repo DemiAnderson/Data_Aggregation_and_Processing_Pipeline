@@ -1,7 +1,7 @@
 from loguru import logger
 import time
 import requests
-from db_config import *  # DB_PARAMS, SSH_TUNNEL_PARAMS
+from db_config import TG_CHAT_ID, TG_TOKEN
 
 # Custom sink for Telegram logging
 def telegram_sink(message):
